@@ -1945,3 +1945,18 @@ progress::-moz-progress-bar {
   .metrics small { font-size: 9px; }
   .practice-footnote { font-size: 10px; }
 }
+
+/* Keep the estimate in the same text flow as the status, at every gauge size. */
+.gauge .gauge-bottom {
+  position: static;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+.practice-controls .voice-unavailable {
+  color: var(--secondary);
+  background: transparent;
+  border-color: transparent;
+  font-size: 12px;
+  white-space: normal;
+  max-width: 200px;
+}

@@ -1,0 +1,140 @@
+{
+  "capture": "Silent, synthetic motion only; editorial cards labelled; scene 3 cuts between real-time excerpts.",
+  "scenes": [
+    {
+      "number": 1,
+      "title": "The practice problem",
+      "duration_seconds": 20,
+      "recording_captions": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 10,
+          "text": "Practice on a cushion or manikin. Pace can drift when you practice alone."
+        },
+        {
+          "start_seconds": 10,
+          "end_seconds": 20,
+          "text": "CPR Pace Coach offers visual feedback from wrist motion. Practice only."
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "title": "Get ready and try the demo",
+      "duration_seconds": 25,
+      "recording_captions": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 10,
+          "text": "Set up a side-angled camera view with both arms visible."
+        },
+        {
+          "start_seconds": 10,
+          "end_seconds": 19,
+          "text": "Try demo uses generated landmarks. No camera or real person is recorded."
+        },
+        {
+          "start_seconds": 19,
+          "end_seconds": 25,
+          "text": "The same detector estimates pace. Voice controls are shown with a silent capture stub."
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "title": "A two-minute practice story",
+      "duration_seconds": 59,
+      "recording_captions": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 8,
+          "text": "Steady at about 110 /min. These are real-time excerpts from one simulated session."
+        },
+        {
+          "start_seconds": 8,
+          "end_seconds": 16,
+          "text": "The pace falls toward 95 /min. The coach responds: Push faster."
+        },
+        {
+          "start_seconds": 16,
+          "end_seconds": 22,
+          "text": "Back in the target band. The coach returns to a steady-rhythm cue."
+        },
+        {
+          "start_seconds": 22,
+          "end_seconds": 27,
+          "text": "A three-second stop triggers Resume compressions and adds observed hands-off time."
+        },
+        {
+          "start_seconds": 27,
+          "end_seconds": 34,
+          "text": "Bent elbows trigger Keep your arms straight. Angles are 2D estimates."
+        },
+        {
+          "start_seconds": 34,
+          "end_seconds": 41,
+          "text": "The pace rises toward 125 /min. The coach responds: Slow down a little."
+        },
+        {
+          "start_seconds": 41,
+          "end_seconds": 50,
+          "text": "The completed result comes from detected motion: outside-band intervals and one stop."
+        },
+        {
+          "start_seconds": 50,
+          "end_seconds": 59,
+          "text": "Arm bending also appears in the summary. These estimates are not a lifesaving score."
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "title": "Evidence and safety",
+      "duration_seconds": 30,
+      "recording_captions": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 10,
+          "text": "Practice only, using a cushion or manikin. Depth and recoil are not measured."
+        },
+        {
+          "start_seconds": 10,
+          "end_seconds": 23,
+          "text": "Synthetic tests check detector behavior. Real-video and clinical validation remain unmeasured."
+        },
+        {
+          "start_seconds": 23,
+          "end_seconds": 30,
+          "text": "In a real emergency, call your local emergency number and follow the dispatcher."
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "title": "A possible next interface",
+      "duration_seconds": 30,
+      "recording_captions": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 6,
+          "text": "The app exposes aggregate summaries for local tools."
+        },
+        {
+          "start_seconds": 6,
+          "end_seconds": 16,
+          "text": "This agent interface is a proposal, not a connected service."
+        },
+        {
+          "start_seconds": 16,
+          "end_seconds": 24,
+          "text": "Opt-in summaries only. No video shared, and missing values stay null."
+        },
+        {
+          "start_seconds": 24,
+          "end_seconds": 30,
+          "text": "Try the synthetic demo. Take one practice goal into your next session."
+        }
+      ]
+    }
+  ]
+}

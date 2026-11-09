@@ -1,9 +1,12 @@
 import { coefficientOfVariation, mean, type Landmark, type PoseFrame } from './detector.js';
 export interface TimeRange { startMs: number; endMs: number }
+export interface PacePoint { timestampMs: number; bpm: number }
 export interface SynthOptions {
   durationMs?: number; bpm?: number; fps?: number; seed?: number;
   /** Uniform fractional variation in cycle length; actual interval CV is in truth. */
   jitter?: number;
+  /** Linearly interpolated pace, sampled at each cycle start. */
+  pace?: PacePoint[];
   /** Uniform x/y coordinate noise amplitude in normalized image units. */
   noise?: number;
   pauses?: TimeRange[]; missing?: TimeRange[]; bent?: TimeRange[];
@@ -22,6 +25,18 @@ export function synthesize(options: SynthOptions = {}) {
     for (const r of ranges) if (!Number.isFinite(r.startMs) || !Number.isFinite(r.endMs) || r.startMs < 0 || r.endMs <= r.startMs || r.endMs > duration) throw new RangeError('Invalid synthetic range');
   }
   if (pauses.some((r, i) => i > 0 && r.startMs < pauses[i - 1]!.endMs)) throw new RangeError('Overlapping pauses');
+  const pace = options.pace ?? [];
+  if (pace.some((p, i) => !Number.isFinite(p.timestampMs) || p.timestampMs < 0 || p.timestampMs > duration ||
+      !Number.isFinite(p.bpm) || p.bpm <= 0 || p.bpm > 200 || (i > 0 && p.timestampMs <= pace[i - 1]!.timestampMs)))
+    throw new RangeError('Invalid synthetic pace');
+  const bpmAt = (t: number) => {
+    if (!pace.length) return bpm;
+    const next = pace.findIndex(p => p.timestampMs > t);
+    if (next === 0) return pace[0]!.bpm;
+    if (next === -1) return pace.at(-1)!.bpm;
+    const a = pace[next - 1]!, b = pace[next]!;
+    return a.bpm + (b.bpm - a.bpm) * (t - a.timestampMs) / (b.timestampMs - a.timestampMs);
+  };
   let seed = (options.seed ?? 42) >>> 0;
   const random = () => { seed = (Math.imul(1664525, seed) + 1013904223) >>> 0; return seed / 4294967296; };
   const cycles: { start: number; end: number; peak: number }[] = [];
@@ -29,7 +44,7 @@ export function synthesize(options: SynthOptions = {}) {
   for (const stop of [...pauses, { startMs: duration, endMs: duration }]) {
     let cursor = start;
     while (true) {
-      const period = 60000 / bpm * (1 + jitter * (2 * random() - 1));
+      const period = 60000 / bpmAt(cursor) * (1 + jitter * (2 * random() - 1));
       if (cursor + period > stop.startMs + 1e-7) break;
       cycles.push({ start: cursor, end: cursor + period, peak: cursor + period / 2 }); cursor += period;
     }
@@ -71,4 +86,19 @@ export function synthesize(options: SynthOptions = {}) {
     averageCpm: m === null ? null : 60000 / m, rhythmCv: coefficientOfVariation(intervals),
     imposedPauseCount: pauses.length, imposedPauseMs: pauses.reduce((s, p) => s + p.endMs - p.startMs, 0),
     bentAngleDeg: bendAngle } };
+}
+
+/** A repeatable practice story. Only landmarks are generated; all feedback is detected. */
+export function synthesizeDemo() {
+  return synthesize({
+    durationMs: 120000, fps: 30, seed: 24, jitter: 0.02, noise: 0.0003,
+    pace: [
+      { timestampMs: 0, bpm: 110 }, { timestampMs: 40000, bpm: 110 },
+      { timestampMs: 45000, bpm: 95 }, { timestampMs: 60000, bpm: 95 },
+      { timestampMs: 65000, bpm: 110 }, { timestampMs: 100000, bpm: 110 },
+      { timestampMs: 108000, bpm: 125 }, { timestampMs: 120000, bpm: 125 },
+    ],
+    pauses: [{ startMs: 70000, endMs: 73000 }],
+    bent: [{ startMs: 90000, endMs: 100000 }], bentAngleDeg: 130,
+  });
 }

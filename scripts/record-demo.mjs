@@ -6,7 +6,7 @@
  * then converts to silent 1920x1080, 30fps H.264. Requires ffmpeg and ffprobe.
  * Optional env: FFMPEG, FFPROBE, DEMO_PORT, DEMO_FONT_FILE (TTF/OTF).
  * All UI selectors and timing live in SCENES below. No camera or clock mocking.
- * Scene 3 waits the full two minutes, cutting out the middle (never speeding up).
+ * Scene 3 waits the full two minutes, keeping coaching moments (never speeding up).
  * Editorial cards are visibly labelled; detector output is never replaced.
  * scenes.json is the separate storyboard/caption source for assemble-demo.sh.
  */
@@ -78,6 +78,7 @@ const SCENES = {
     await s.at(begin,13); await s.point(app.getByRole('button',{name:/Try demo/}));
     await s.at(begin,16); await s.click(app.getByRole('button',{name:/Try demo/}));
     await app.getByText('Simulated motion',{exact:true}).waitFor();
+    await s.click(app.getByRole('button',{name:'Voice off',exact:true}));
     await s.at(begin,19); await s.point(app.getByText('Simulated motion',{exact:true}));
     await s.at(begin,22); await s.point(app.locator('.gauge-reading'));
     await s.at(begin,25); return [[begin,25]];
@@ -85,24 +86,42 @@ const SCENES = {
   3: async s => {
     const app=await s.app(); await s.click(app.getByRole('button',{name:/Try demo/}));
     await app.getByText('On target',{exact:true}).waitFor();
-    const begin=s.mark();
-    await s.point(app.locator('.gauge-reading'));
-    await s.at(begin,7); await s.point(app.locator('.metrics > div').nth(0));
-    await s.at(begin,12); await s.point(app.locator('.metrics > div').nth(1));
-    await s.at(begin,17); await s.point(app.locator('.metrics > div').nth(2));
-    await s.at(begin,22); await s.point(app.locator('.pose-card'));
-    await s.at(begin,27);
-    console.log('Scene 03: waiting for the real two-minute session to finish; middle will be cut.');
-    await app.getByRole('heading',{name:'A little practice, in perspective.'}).waitFor({timeout:130000});
+    await s.click(app.getByRole('button',{name:'Voice off',exact:true}));
+    await app.getByRole('button',{name:'Voice on',exact:true}).waitFor();
+    const segments=[];
+    const hold=async(label, seconds, target) => {
+      const begin=s.mark();
+      await s.page.screenshot({path:path.join(output,`scene_03_${label}.png`)});
+      await s.point(target);
+      await s.at(begin,seconds);
+      segments.push([begin,seconds]);
+    };
+    await hold('steady',8,app.locator('.gauge-reading'));
+    console.log('Scene 03: recording the real two-minute story and cutting between coaching moments.');
+    await app.getByText('Push faster',{exact:true}).waitFor({timeout:60000});
+    await sleep(3000);
+    await hold('slower',8,app.locator('.coach-cue'));
+    await app.getByText('Keep a steady rhythm',{exact:true}).waitFor({timeout:30000});
+    await hold('recovered',6,app.locator('.gauge-reading'));
+    await app.getByText('Resume compressions',{exact:true}).waitFor({timeout:15000});
+    await hold('stop',5,app.locator('.metrics > div').nth(1));
+    await app.getByText('Keep your arms straight',{exact:true}).waitFor({timeout:30000});
+    await hold('bent',7,app.locator('.pose-card'));
+    await app.getByText('Slow down a little',{exact:true}).waitFor({timeout:30000});
+    await hold('faster',7,app.locator('.coach-cue'));
+    await app.getByRole('heading',{name:'A little practice, in perspective.'}).waitFor({timeout:20000});
     await app.getByText('Completed',{exact:true}).waitFor();
     await app.getByText('02:00 recorded',{exact:true}).waitFor();
     await sleep(500);
     const result=s.mark();
     await s.page.screenshot({path:path.join(output,'scene_03_completed.png')});
+    const download=s.page.waitForEvent('download');
+    await app.getByRole('button',{name:'Export JSON',exact:true}).first().click();
+    await (await download).saveAs(path.join(output,'demo-result.json'));
     await s.point(app.locator('.result-top .badge'));
     await s.at(result,6); await s.point(app.locator('.result-metrics'));
     await s.at(result,12); await s.point(app.locator('.target-result > .badge'));
-    await s.at(result,18); return [[begin,27],[result,18]];
+    await s.at(result,18); return [...segments,[result,18]];
   },
   4: async s => {
     await s.card(boundaries); const begin=s.mark();
@@ -127,6 +146,7 @@ const SCENES = {
 };
 
 await mkdir(output,{recursive:true});
+await writeFile(path.join(output,'scenes.json'),await readFile(path.join(root,'scripts/demo-scenes.json')));
 execFileSync(ffmpeg,['-version'],{stdio:'ignore'});
 execFileSync(ffprobe,['-version'],{stdio:'ignore'});
 await run('npm',['run','build']);
@@ -154,7 +174,7 @@ try {
   for(const number of selected){
     console.log(`Recording scene ${String(number).padStart(2,'0')}…`);
     const errors=[],blocked=[];
-    const context=await browser.newContext({viewport:{width:1920,height:1080},deviceScaleFactor:1,locale:'en-US',timezoneId:'UTC',colorScheme:'light',permissions:[],recordVideo:{dir:work,size:{width:1920,height:1080}}});
+    const context=await browser.newContext({viewport:{width:1920,height:1080},deviceScaleFactor:1,locale:'en-US',colorScheme:'light',permissions:[],recordVideo:{dir:work,size:{width:1920,height:1080}}});
     await context.route('**/*',async route=>{
       const url=new URL(route.request().url());
       if(url.origin!==origin){blocked.push(url.origin);return route.abort();}
@@ -163,6 +183,16 @@ try {
       return route.continue();
     });
     await context.addInitScript(()=>{
+      // Capture-only silent voice stub: app still exercises its normal voice controls.
+      // A matching utterance stub accepts the synthetic voice without native type checks.
+      const voice={name:'Demo English',lang:'en-US',localService:true,default:true,voiceURI:'demo-silent'};
+      Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{
+        getVoices:()=>[voice], speak:()=>{}, cancel:()=>{},
+        addEventListener:()=>{}, removeEventListener:()=>{},
+      }});
+      Object.defineProperty(window,'SpeechSynthesisUtterance',{configurable:true,value:class {
+        constructor(text){this.text=text;}
+      }});
       // Fail closed if future scene edits accidentally request camera/microphone input.
       if(navigator.mediaDevices)navigator.mediaDevices.getUserMedia=async()=>{throw new Error('Capture prohibits camera and microphone');};
       window.addEventListener('mousemove',e=>{
@@ -202,7 +232,7 @@ try {
     const filter=trims+';'+segments.map((_,i)=>`[v${i}]`).join('')+`concat=n=${segments.length}:v=1:a=0,fps=30,tpad=stop_mode=clone:stop_duration=1,trim=duration=${total},setsar=1[out]`;
     await run(ffmpeg,['-hide_banner','-loglevel','error','-y','-i',raw,'-filter_complex',filter,'-map','[out]','-an','-c:v','libx264','-crf','18','-preset','fast','-threads','4','-pix_fmt','yuv420p','-r','30','-fps_mode','cfr','-movflags','+faststart',path.join(output,stem+'.mp4')]);
     if(errors.length || blocked.length)throw new Error(`Scene ${number}: ${JSON.stringify({errors,blocked})}`);
-    checks.push({scene:number,duration_seconds:duration(path.join(output,stem+'.mp4')),errors,blocked_external_origins:blocked,segments:segments.map(([,duration])=>({duration_seconds:duration})),camera_used:false});
+    checks.push({scene:number,duration_seconds:duration(path.join(output,stem+'.mp4')),errors,blocked_external_origins:blocked,segments:segments.map(([,duration])=>({duration_seconds:duration})),camera_used:false,voice_stub:'silent English voice; capture only'});
     await rm(raw,{force:true});
     await writeFile(path.join(output,'recording-checks.json'),JSON.stringify({capture:'Playwright Chromium; real-time synthetic demo; no clock acceleration; editorial cards labelled separately',checks},null,2));
   }

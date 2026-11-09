@@ -9,7 +9,7 @@ import {
   type DetectorSnapshot,
   type Landmark,
 } from "../src/detector";
-import { synthesize } from "../src/synth";
+import { synthesizeDemo } from "../src/synth";
 import { analyzeVideoFile } from "../src/video";
 
 export type Source = "demo" | "camera" | "imported_video";
@@ -117,12 +117,7 @@ export interface LiveState {
 }
 export class LivePractice {
   private session: PracticeSession;
-  private frames = synthesize({
-    bpm: 110,
-    jitter: 0.06,
-    noise: 0.0003,
-    seed: 24,
-  }).frames;
+  private frames = synthesizeDemo().frames;
   private index = 0;
   private raf = 0;
   private offset = 0;

@@ -19,6 +19,7 @@ import {
   type Source,
 } from "./runtime";
 import { useAudio } from "./audio";
+import { coachingCue } from "../src/coaching";
 
 type Stage = "welcome" | "setup" | "practice" | "importing" | "results";
 const initialLive: LiveState = { snapshot: null, landmarks: [], elapsed: 0 };
@@ -64,19 +65,7 @@ export default function App() {
           : rate > 120
             ? "Above target"
             : "On target";
-  const cue = paused
-    ? "Take your time. Resume when ready."
-    : s?.missingLandmarks
-      ? "Keep both shoulders and arms in view"
-      : s?.pauses.some((p) => p.ongoing)
-        ? "When ready, return to a steady rhythm"
-        : rate === null
-          ? "Start moving to find your rhythm"
-          : rate < 100
-            ? "Pick up the pace a little"
-            : rate > 120
-              ? "Ease the pace a little"
-              : "Keep a steady rhythm";
+  const cue = coachingCue(s, paused);
   const audio = useAudio(stage === "practice" && !paused, cue);
   const cleanup = () => {
     controller.current?.abort();
@@ -668,8 +657,8 @@ export default function App() {
                     </span>
                   </button>
                   <button
-                    className={`button ${audio.voice ? "selected" : ""}`}
-                    aria-pressed={audio.voice}
+                    className={`button ${audio.voiceAvailable && audio.voice ? "selected" : ""} ${!audio.voiceAvailable ? "voice-unavailable" : ""}`}
+                    aria-pressed={audio.voiceAvailable && audio.voice}
                     disabled={!audio.voiceAvailable}
                     onClick={audio.toggleVoice}
                     title={
@@ -681,7 +670,7 @@ export default function App() {
                     <Icon name="sound" />
                     {audio.voiceAvailable
                       ? `Voice ${audio.voice ? "on" : "off"}`
-                      : "No local voice"}
+                      : "Voice (unavailable on this device)"}
                   </button>
                   <button className="button" onClick={togglePause}>
                     <Icon name={paused ? "play" : "pause"} />
@@ -805,12 +794,12 @@ function Results({
         <span>{time(s.durationMs)} recorded</span>
         <span>{number(result.paused_ms / 1000, 1)} s user-paused</span>
         <span>
-          {new Date(result.started_at).toLocaleTimeString("en", {
+          {new Date(result.started_at).toLocaleTimeString(undefined, {
             hour: "2-digit",
             minute: "2-digit",
           })}{" "}
           –{" "}
-          {new Date(result.ended_at).toLocaleTimeString("en", {
+          {new Date(result.ended_at).toLocaleTimeString(undefined, {
             hour: "2-digit",
             minute: "2-digit",
           })}
@@ -829,6 +818,8 @@ function Results({
           <p>
             {s.rate.inTargetCount} of {s.rate.evaluableCount} intervals at
             100–120 /min.
+            <br />
+            {percent(s.rate.inTargetFraction === null ? null : 1 - s.rate.inTargetFraction)} outside the target band.
             <br />
             {s.compressionCount} wrist cycles detected.
           </p>
@@ -866,7 +857,7 @@ function Results({
           <ResultMetric
             label="Arms extended"
             value={percent(s.arms.bothStraightFraction)}
-            detail="Of arm-observed time · 2D"
+            detail={`${percent(s.arms.bothStraightFraction === null ? null : 1 - s.arms.bothStraightFraction)} arms bent · of arm-observed time · 2D`}
           />
           <ResultMetric
             label="Elbow angles"

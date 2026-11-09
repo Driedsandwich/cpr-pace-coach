@@ -192,12 +192,12 @@ export function Gauge({
         <span className="rate-unit">/min</span>
         <span className="target-label">Target 100–120</span>
         <b className="rate-status">{label}</b>
+        <span className="gauge-bottom">
+          {preview
+            ? "Two minutes. One steady rhythm."
+            : "Estimated from wrist motion"}
+        </span>
       </div>
-      <span className="gauge-bottom">
-        {preview
-          ? "Two minutes. One steady rhythm."
-          : "Estimated from wrist motion"}
-      </span>
     </div>
   );
 }

@@ -50,9 +50,12 @@ test("demo uses the detector, completes at two running minutes, and exports MCP-
   const session = parseSessionResult(result.session);
   expect(session.durationMs).toBe(120000);
   expect(session.compressionCount).toBeGreaterThan(200);
-  expect(session.pauses.totalMs).toBe(0);
-  expect(session.rate.averageCpm).toBeGreaterThan(109);
-  expect(session.rate.averageCpm).toBeLessThan(111);
+  expect(session.pauses.count).toBe(1);
+  expect(session.pauses.totalMs).toBeGreaterThanOrEqual(3000);
+  expect(session.rate.inTargetFraction).toBeLessThan(0.9);
+  expect(session.arms.bothStraightFraction).toBeCloseTo(110 / 120, 2);
+  expect(session.rate.averageCpm).toBeGreaterThan(105);
+  expect(session.rate.averageCpm).toBeLessThan(115);
   expect(external).toEqual([]);
 });
 
@@ -162,4 +165,62 @@ test("import model failure and cancellation return safely to the entry screen", 
   await expect(
     page.getByRole("button", { name: "Try demo", exact: false }),
   ).toBeVisible();
+});
+
+
+test("demo coaching follows the detected practice story", async ({ page }) => {
+  await page.clock.install();
+  await page.goto("./");
+  await page.getByRole("button", { name: "Try demo", exact: false }).click();
+  let elapsed = 0;
+  for (const [at, cue] of [
+    [10000, "Keep a steady rhythm"], [50000, "Push faster"],
+    [68000, "Keep a steady rhythm"], [72300, "Resume compressions"],
+    [80000, "Keep a steady rhythm"], [95000, "Keep your arms straight"],
+    [115000, "Slow down a little"],
+  ] as const) {
+    await page.clock.fastForward(at - elapsed);
+    elapsed = at;
+    await expect(page.locator(".coach-cue")).toHaveText(cue);
+    if (at === 72300) await expect(page.locator(".metrics > div").nth(1).locator("strong")).not.toHaveText("0.0 s");
+  }
+});
+
+test("unavailable voice is quiet and gauge text stays separate at narrow desktop widths", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "speechSynthesis", { value: {
+      getVoices: () => [], addEventListener() {}, removeEventListener() {}, cancel() {},
+    } });
+  });
+  await page.clock.install();
+  await page.goto("./");
+  await page.getByRole("button", { name: "Try demo", exact: false }).click();
+  await page.clock.fastForward(10000);
+  await expect(page.getByRole("button", { name: "Voice (unavailable on this device)", exact: true })).toBeDisabled();
+  for (const [width, height] of [[1440, 900], [1280, 720], [1100, 800], [1024, 768], [900, 700], [390, 844]]) {
+    await page.setViewportSize({ width: width!, height: height! });
+    const status = await page.locator(".rate-status").boundingBox();
+    const estimate = await page.locator(".gauge-bottom").boundingBox();
+    expect(estimate!.y).toBeGreaterThanOrEqual(status!.y + status!.height + 4);
+    const cue = await page.locator(".coach-cue").boundingBox();
+    expect(estimate!.y + estimate!.height).toBeLessThanOrEqual(cue!.y);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+  }
+});
+
+test("result times use the viewer locale and timezone", async ({ browser }) => {
+  const context = await browser.newContext({ locale: "en-GB", timezoneId: "Asia/Tokyo" });
+  const page = await context.newPage();
+  try {
+    await page.goto("http://127.0.0.1:4173/cpr-pace-coach/");
+    await page.getByRole("button", { name: "Try demo", exact: false }).click();
+    await page.getByRole("button", { name: "End practice" }).click();
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export JSON", exact: true }).first().click();
+    const result = JSON.parse(await readFile((await (await download).path())!, "utf8"));
+    const expected = await page.evaluate(({ started_at, ended_at }) =>
+      [started_at, ended_at].map(t => new Date(t).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })).join(" – "), result);
+    await expect(page.locator(".result-meta > span").last()).toHaveText(expected);
+    expect(expected).not.toMatch(/AM|PM/);
+  } finally { await context.close(); }
 });

@@ -34,6 +34,8 @@ All direct dependency versions are exact and the lockfile is committed. The offi
 
 During live practice, the target band is 100–120 /min. The current rate uses the latest five detected wrist cycles. The three supporting tiles show recent interval variability, observed hands-off time, and the mean of the current left/right 2D elbow angles. Missing tracking displays a dash, never a fabricated zero. These are prototype estimates, not verified chest compressions or a CPR competence assessment.
 
+The two-minute demo starts near 110 /min, slows to 95 during 40–60 seconds, recovers, stops for three seconds at 70 seconds, bends the elbows during 90–100 seconds, then rises to 125 /min. `synthesizeDemo()` generates only landmarks. The ordinary detector and shared coaching function produce the cues and results, including outside-band intervals, one observed stop, and arm bending. Stop duration is measured peak to peak, so it is slightly longer than the imposed stillness. Result times use the viewer's locale and timezone.
+
 **Beat on/off** generates a 110/min metronome with Web Audio. **Voice on/off** uses only an English `speechSynthesis` voice whose `localService` flag is true; if unavailable, the button explains that and visual coaching continues. Both are off initially. A user gesture enables audio. Pausing, ending, changing mode, or hiding the tab stops coaching audio.
 
 **Pause / Resume** excludes user-paused wall time from the two-minute running clock and splits detector observations so a pause is not counted as hands-off. Hiding the page automatically pauses live practice; resume explicitly when ready. **End practice** produces an early result. At 120 running seconds, results open automatically and the camera is released. The one-page summary includes target-band share, rate, CV, observed stops/time, projected arm extension, tracking coverage, wall-clock start/end and a next practice goal. Unavailable values are shown as dashes and exported as nulls where the core schema defines nullable metrics.
@@ -64,6 +66,19 @@ node scripts/model-smoke.mjs /absolute/path/to/artifacts
 ```
 
 Browser checks cover a full synthetic session, pause/resume accounting, JSON downloads and the unchanged core parser, mobile width/keyboard controls, failure recovery and cancellation. Browser testing uses synthetic/fake inputs only, never real-person footage. Screenshots are actual rendered pages, not design mockups. Clinical accuracy, physical webcam framing, audible voice quality, and Safari/iOS hardware behavior still need device testing.
+
+### Record the five-scene demo
+
+Set `ARTIFACT_DIR` to your output folder, then run:
+
+```sh
+node scripts/record-demo.mjs "$ARTIFACT_DIR/video_out"
+bash scripts/assemble-demo.sh "$ARTIFACT_DIR/video_out" - "$ARTIFACT_DIR/video_out/scenes.json"
+```
+
+Requires Playwright Chromium, ffmpeg with libx264/libass, ffprobe, and a sans-serif font. Optional `FFMPEG`, `FFPROBE`, `DEMO_FONT_FILE` and `DEMO_FONT_DIR` select local dependencies. Recording copies `scripts/demo-scenes.json` into the output as `scenes.json`. The five clips last 20, 25, 59, 30 and 30 seconds; the assembled silent, captioned film lasts 2:44. Scene 3 records the full session in real time and cuts between coaching moments and the completed summary; it never substitutes detector results. Keyframes, the exported demo result, and recording checks accompany the clips.
+
+Only the recording context stubs the English speech voice list and speech output, so normal **Voice on** controls can be shown without sound. Camera/microphone input and external requests are blocked. The recording does not fix the browser timezone. The app itself continues to display **Voice (unavailable on this device)** when no local English voice exists.
 
 ## Files and API
 
