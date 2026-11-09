@@ -234,4 +234,4 @@ Original code in this package is **MIT**, see `LICENSE`. Third-party dependencie
 
 The measured average-rate errors for the three constant-rate noise/spike cases are 0.000, 0.011 and 0.006 cpm (rounded). This is synthetic algorithm testing, not real-world accuracy. Two imposed stops totaling 8.000 s produce two detected pauses totaling 9.367 s because of peak-to-peak boundaries. The evaluator also reports peak-time error, emission latency, CV error, missed events during tracking loss and projected elbow flags.
 
-Remaining validation: independent camera/pose accuracy testing on physical devices, Safari/iOS and audible speech checks, and frame-accurate variable-rate decoding if required. This is not a clinically validated tool. No deployment, push, external application writes or real-person imagery were used.
+Remaining validation: independent camera/pose accuracy testing on physical devices, Safari/iOS and audible speech checks, and frame-accurate variable-rate decoding if required. This is not a clinically validated tool. No external application writes or real-person imagery were used. The static site is published on GitHub Pages from this repository.
