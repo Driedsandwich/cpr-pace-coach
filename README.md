@@ -26,7 +26,7 @@ All direct dependency versions are exact and the lockfile is committed. The offi
 
 ## Try the app
 
-**Planned live URL:** [https://driedsandwich.github.io/cpr-pace-coach/](https://driedsandwich.github.io/cpr-pace-coach/). This is a placeholder until the owner publishes the repository and enables Pages. This change does not publish or push anything.
+**Live URL:** [https://driedsandwich.github.io/cpr-pace-coach/](https://driedsandwich.github.io/cpr-pace-coach/).
 
 1. **Try demo** is the quickest introduction, with no camera permission or model download. Deterministic motion from `src/synth.ts` is played through the real `PracticeSession` and detector. “Simulated motion” remains visible during practice and on results. Numbers are calculated, not copied from a mockup.
 2. **Start with camera** opens a setup diagram. Place a stable camera to your side, slightly angled so both shoulders, elbows and wrists remain visible; a pure side view may hide one arm. Enable the camera, allow access, check the preview, and confirm the cushion/manikin setup before beginning. HTTPS or localhost is required.
@@ -50,7 +50,7 @@ No external fonts, photos or real-person recordings are included. The setup draw
 
 ### GitHub Pages
 
-Vite's base is `/cpr-pace-coach/`. `.github/workflows/pages.yml` uses official GitHub actions pinned to commit SHAs. On `main` pushes or manual dispatch it installs, tests and builds, then uploads only `dist/site`. Deployment is gated on the repository being public. When ready, make the repository public yourself, set **Settings → Pages → Source → GitHub Actions**, then run the workflow or push to `main`. The Node MCP process is not deployed to Pages. No model `.task` file is in the artifact.
+Vite's base is `/cpr-pace-coach/`. `.github/workflows/pages.yml` uses official GitHub actions pinned to commit SHAs. On `main` pushes or manual dispatch it installs, tests and builds, then uploads only `dist/site`. The repository is public and the app is live on GitHub Pages, with **Settings → Pages → Source → GitHub Actions**. The Node MCP process is not deployed to Pages. No model `.task` file is in the artifact.
 
 ### Browser checks and screenshots
 

@@ -1,140 +1,154 @@
 {
-  "capture": "Silent, synthetic motion only; editorial cards labelled; scene 3 cuts between real-time excerpts.",
+  "capture": "Silent Playwright capture; synthetic motion only; no burned-in subtitles. Scene 3 uses real-time excerpts. Scene 4 shows public sources; scene 5 shows actual local MCP JSON-RPC.",
   "scenes": [
     {
       "number": 1,
       "title": "The practice problem",
       "duration_seconds": 20,
-      "recording_captions": [
+      "file": "scene_01.mp4",
+      "shots": [
         {
           "start_seconds": 0,
           "end_seconds": 10,
-          "text": "Practice on a cushion or manikin. Pace can drift when you practice alone."
+          "content": "Practice on a cushion or manikin. Pace can drift when you practice alone."
         },
         {
           "start_seconds": 10,
           "end_seconds": 20,
-          "text": "CPR Pace Coach offers visual feedback from wrist motion. Practice only."
+          "content": "CPR Pace Coach offers visual feedback from wrist motion. Practice only."
         }
-      ]
+      ],
+      "timeline_start_seconds": 0,
+      "timeline_end_seconds": 20
     },
     {
       "number": 2,
       "title": "Get ready and try the demo",
       "duration_seconds": 25,
-      "recording_captions": [
+      "file": "scene_02.mp4",
+      "shots": [
         {
           "start_seconds": 0,
           "end_seconds": 10,
-          "text": "Set up a side-angled camera view with both arms visible."
+          "content": "Set up a side-angled camera view with both arms visible."
         },
         {
           "start_seconds": 10,
           "end_seconds": 19,
-          "text": "Try demo uses generated landmarks. No camera or real person is recorded."
+          "content": "Try demo uses generated landmarks. No camera or real person is recorded."
         },
         {
           "start_seconds": 19,
           "end_seconds": 25,
-          "text": "The same detector estimates pace. Voice controls are shown with a silent capture stub."
+          "content": "The same detector estimates pace. Voice controls are shown with a silent capture stub."
         }
-      ]
+      ],
+      "timeline_start_seconds": 20,
+      "timeline_end_seconds": 45
     },
     {
       "number": 3,
       "title": "A two-minute practice story",
       "duration_seconds": 59,
-      "recording_captions": [
+      "file": "scene_03.mp4",
+      "shots": [
         {
           "start_seconds": 0,
           "end_seconds": 8,
-          "text": "Steady at about 110 /min. These are real-time excerpts from one simulated session."
+          "content": "Steady at about 110 /min. These are real-time excerpts from one simulated session."
         },
         {
           "start_seconds": 8,
           "end_seconds": 16,
-          "text": "The pace falls toward 95 /min. The coach responds: Push faster."
+          "content": "The pace falls toward 95 /min. The coach responds: Push faster."
         },
         {
           "start_seconds": 16,
           "end_seconds": 22,
-          "text": "Back in the target band. The coach returns to a steady-rhythm cue."
+          "content": "Back in the target band. The coach returns to a steady-rhythm cue."
         },
         {
           "start_seconds": 22,
           "end_seconds": 27,
-          "text": "A three-second stop triggers Resume compressions and adds observed hands-off time."
+          "content": "A three-second stop triggers Resume compressions and adds observed hands-off time."
         },
         {
           "start_seconds": 27,
           "end_seconds": 34,
-          "text": "Bent elbows trigger Keep your arms straight. Angles are 2D estimates."
+          "content": "Bent elbows trigger Keep your arms straight. Angles are 2D estimates."
         },
         {
           "start_seconds": 34,
           "end_seconds": 41,
-          "text": "The pace rises toward 125 /min. The coach responds: Slow down a little."
+          "content": "The pace rises toward 125 /min. The coach responds: Slow down a little."
         },
         {
           "start_seconds": 41,
           "end_seconds": 50,
-          "text": "The completed result comes from detected motion: outside-band intervals and one stop."
+          "content": "The completed result comes from detected motion: outside-band intervals and one stop."
         },
         {
           "start_seconds": 50,
           "end_seconds": 59,
-          "text": "Arm bending also appears in the summary. These estimates are not a lifesaving score."
+          "content": "Arm bending also appears in the summary. These estimates are not a lifesaving score."
         }
-      ]
+      ],
+      "timeline_start_seconds": 45,
+      "timeline_end_seconds": 104
     },
     {
       "number": 4,
-      "title": "Evidence and safety",
+      "title": "Evidence and limits",
       "duration_seconds": 30,
-      "recording_captions": [
+      "file": "scene_04.mp4",
+      "shots": [
         {
           "start_seconds": 0,
-          "end_seconds": 10,
-          "text": "Practice only, using a cushion or manikin. Depth and recoil are not measured."
+          "end_seconds": 15,
+          "content": "Public app: AHA 2025 / ERC 2025 source links and Depth is not measured note."
         },
         {
-          "start_seconds": 10,
-          "end_seconds": 23,
-          "text": "Synthetic tests check detector behavior. Real-video and clinical validation remain unmeasured."
-        },
-        {
-          "start_seconds": 23,
+          "start_seconds": 15,
           "end_seconds": 30,
-          "text": "In a real emergency, call your local emergency number and follow the dispatcher."
+          "content": "GitHub eval/RESULTS.md: actual synthetic-rate error table, without redaction."
         }
-      ]
+      ],
+      "timeline_start_seconds": 104,
+      "timeline_end_seconds": 134
     },
     {
       "number": 5,
-      "title": "A possible next interface",
+      "title": "The AI agent interface",
       "duration_seconds": 30,
-      "recording_captions": [
+      "file": "scene_05.mp4",
+      "shots": [
         {
           "start_seconds": 0,
-          "end_seconds": 6,
-          "text": "The app exposes aggregate summaries for local tools."
+          "end_seconds": 8,
+          "content": "Actual Export JSON download from the completed scene 3 session."
         },
         {
-          "start_seconds": 6,
-          "end_seconds": 16,
-          "text": "This agent interface is a proposal, not a connected service."
+          "start_seconds": 8,
+          "end_seconds": 13,
+          "content": "Actual tools/list JSON-RPC request and server response."
         },
         {
-          "start_seconds": 16,
-          "end_seconds": 24,
-          "text": "Opt-in summaries only. No video shared, and missing values stay null."
-        },
-        {
-          "start_seconds": 24,
+          "start_seconds": 13,
           "end_seconds": 30,
-          "text": "Try the synthetic demo. Take one practice goal into your next session."
+          "content": "Actual tools/call summarize_session with the downloaded session, and unchanged response."
         }
-      ]
+      ],
+      "timeline_start_seconds": 134,
+      "timeline_end_seconds": 164
     }
-  ]
+  ],
+  "audio": false,
+  "burned_in_subtitles": false,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fps": 30,
+  "combined_file": "demo_silent.mp4",
+  "total_duration_seconds": 164
 }

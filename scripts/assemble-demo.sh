@@ -14,7 +14,8 @@ import json, math, os, pathlib, shutil, subprocess, sys, tempfile, textwrap
 video_dir = pathlib.Path(sys.argv[1]).resolve()
 audio_dir = None if sys.argv[2] == '-' else pathlib.Path(sys.argv[2]).resolve()
 manifest = json.loads(pathlib.Path(sys.argv[3]).read_text())
-output = pathlib.Path(sys.argv[4]).resolve() if len(sys.argv)>4 else video_dir/'demo_silent_captioned.mp4'
+burn_captions = manifest.get('burned_in_subtitles', True)
+output = pathlib.Path(sys.argv[4]).resolve() if len(sys.argv)>4 else video_dir/('demo_silent_captioned.mp4' if burn_captions else 'demo_silent.mp4')
 ffmpeg, ffprobe = os.getenv('FFMPEG','ffmpeg'), os.getenv('FFPROBE','ffprobe')
 def run(args, **kw):
     return subprocess.run(args, check=True, **kw)
@@ -56,7 +57,7 @@ with tempfile.TemporaryDirectory(prefix='demo-assemble-') as work:
     if fonts: shutil.copytree(fonts,tmp/'fonts')
     parts=[]
     for index,(s,v,a,target) in enumerate(rows):
-        caps=s.get('recording_captions') or s.get('captions') or [{'start_seconds':0,'end_seconds':target,'text':s['subtitle']}]
+        caps=(s.get('recording_captions') or s.get('captions') or [{'start_seconds':0,'end_seconds':target,'text':s['subtitle']}]) if burn_captions else []
         ass='''[Script Info]
 ScriptType: v4.00+
 PlayResX: 1920
@@ -78,8 +79,9 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             if start<target:
                 ass+=f'Dialogue: 0,{timestamp(start)},{timestamp(min(end,target))},Caption,,0,0,0,,{ass_text(c["text"])}\n'
         (tmp/'captions.ass').write_text(ass)
-        vf=f'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,tpad=stop_mode=clone:stop_duration={target},trim=duration={target},setpts=PTS-STARTPTS,drawbox=x=0:y=976:w=iw:h=104:color=0x1b2027:t=fill,subtitles=filename=captions.ass'
-        if fonts: vf+=':fontsdir=fonts'
+        vf=f'scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,fps=30,setsar=1,tpad=stop_mode=clone:stop_duration={target},trim=duration={target},setpts=PTS-STARTPTS'
+        if burn_captions: vf+=',drawbox=x=0:y=976:w=iw:h=104:color=0x1b2027:t=fill,subtitles=filename=captions.ass'
+        if fonts and burn_captions: vf+=':fontsdir=fonts'
         cmd=[ffmpeg,'-hide_banner','-loglevel','error','-y','-i',str(v)]
         if with_audio:
             cmd+=['-i',str(a)] if a else ['-f','lavfi','-i','anullsrc=r=48000:cl=stereo']
