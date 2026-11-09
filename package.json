@@ -1,0 +1,43 @@
+{
+  "name": "local-cpr-practice-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-only landmark rhythm coach for manikin or cushion practice",
+  "license": "MIT",
+  "engines": {
+    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./video": {
+      "types": "./dist/src/video.d.ts",
+      "import": "./dist/src/video.js"
+    },
+    "./schema": "./schema/session.schema.json"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "eval": "tsx eval/run.ts",
+    "schema": "tsx scripts/schema.ts",
+    "start": "tsx scripts/demo.ts",
+    "mcp": "tsx mcp/server.ts"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.2.2",
+    "@modelcontextprotocol/server": "2.4.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.4.0",
+    "@types/node": "26.6.6",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}

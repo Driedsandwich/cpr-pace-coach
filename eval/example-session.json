@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "purpose": "practice-only",
+  "plannedDurationMs": 120000,
+  "durationMs": 120000,
+  "completed": true,
+  "compressionCount": 220,
+  "rate": {
+    "targetMinCpm": 100,
+    "targetMaxCpm": 120,
+    "evaluableCount": 219,
+    "inTargetCount": 219,
+    "inTargetFraction": 1,
+    "averageCpm": 109.98883928571429,
+    "rhythmCv": 0.032190003710579396
+  },
+  "pauses": {
+    "thresholdMs": 2000,
+    "count": 0,
+    "totalMs": 0,
+    "intervals": []
+  },
+  "activity": {
+    "observedMs": 120000,
+    "unknownMs": 0,
+    "activeMs": 119466.66666666667,
+    "chestCompressionFraction": 0.9955555555555556,
+    "observedCompressionFraction": 0.9955555555555556
+  },
+  "arms": {
+    "bentThresholdDeg": 160,
+    "observedMs": 120000,
+    "bothStraightMs": 120000,
+    "bothStraightFraction": 1,
+    "meanLeftDeg": 179.65729583814115,
+    "meanRightDeg": 179.65607690021878
+  }
+}
