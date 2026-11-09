@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://driedsandwich.github.io/cpr-pace-coach/schema/practice-export.schema.json",
+  "title": "CPR Pace Coach practice export",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "is_demo": {
+      "type": "boolean"
+    },
+    "source": {
+      "enum": [
+        "demo",
+        "camera",
+        "imported_video"
+      ]
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "ended_early"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paused_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "simulated_motion",
+            "camera_estimate"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sdk_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_tracking_fraction": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metric_config": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "startTimeMs": {
+              "type": "number"
+            },
+            "aspectRatio": {
+              "type": "number"
+            },
+            "minVisibility": {
+              "type": "number"
+            },
+            "minShoulderWidth": {
+              "type": "number"
+            },
+            "smoothingMs": {
+              "type": "number"
+            },
+            "minExcursion": {
+              "type": "number"
+            },
+            "reversal": {
+              "type": "number"
+            },
+            "minIntervalMs": {
+              "type": "number"
+            },
+            "pauseThresholdMs": {
+              "type": "number"
+            },
+            "maxFrameGapMs": {
+              "type": "number"
+            },
+            "bentAngleDeg": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "startTimeMs",
+            "aspectRatio",
+            "minVisibility",
+            "minShoulderWidth",
+            "smoothingMs",
+            "minExcursion",
+            "reversal",
+            "minIntervalMs",
+            "pauseThresholdMs",
+            "maxFrameGapMs",
+            "bentAngleDeg"
+          ]
+        },
+        "rate_window_events": {
+          "const": 5
+        },
+        "update": {
+          "type": "string"
+        },
+        "rhythm_window": {
+          "type": "string"
+        },
+        "video_sampling_fps": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "model",
+        "sdk_version",
+        "valid_tracking_fraction",
+        "metric_config",
+        "rate_window_events",
+        "update",
+        "rhythm_window",
+        "video_sampling_fps"
+      ]
+    },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "raw_video_included": {
+          "const": false
+        },
+        "pose_coordinates_included": {
+          "const": false
+        }
+      },
+      "required": [
+        "raw_video_included",
+        "pose_coordinates_included"
+      ]
+    },
+    "session": {
+      "$ref": "session.schema.json"
+    },
+    "disclaimer": {
+      "const": "Practice tool only. In a real emergency, call your local emergency number and follow the dispatcher."
+    }
+  },
+  "required": [
+    "schema_version",
+    "session_id",
+    "is_demo",
+    "source",
+    "status",
+    "started_at",
+    "ended_at",
+    "paused_ms",
+    "measurement",
+    "privacy",
+    "session",
+    "disclaimer"
+  ]
+}

@@ -4,3 +4,7 @@
 *.tsbuildinfo
 dist/
 node_modules/
+public/vendor/
+public/schema/
+playwright-report/
+test-results/

@@ -1,6 +1,6 @@
-# Local CPR practice core
+# CPR Pace Coach
 
-A small TypeScript package for a student medical hackathon: a camera-landmark rhythm coach for chest-compression practice on a **manikin or cushion**. No UI is included. Processing is local to the browser; video is not sent off the device. The Node demo and evaluation use only synthetic numeric landmarks. The separate MCP process receives summary JSON only.
+A static, English-language CPR rhythm practice app for DSH Hacks V2 (AI × Healthcare). Practice on a **manikin or cushion**, with a camera, a local recording, or a prominently labeled simulated demo. A large central rate gauge keeps pace in focus; a small landmark window shows shoulder, elbow and wrist motion. React + TypeScript + Vite, with the existing detector/session core and local MCP tools. No application server, account, API key, analytics or video upload.
 
 **Practice tool only. In a real emergency, call your local emergency number and follow the dispatcher.**
 
@@ -14,13 +14,56 @@ Use Node.js 22.12+, 24.x or 26+ and npm (matching the Vitest engine range). Comm
 npm ci
 npm test
 npm run typecheck
-npm run build
+npm run dev         # http://localhost:5173/cpr-pace-coach/
+npm run build       # static app: dist/site; core/MCP: dist/src and dist/mcp
+npm run preview     # http://localhost:4173/cpr-pace-coach/
 npm start            # two-minute synthetic practice -> JSON + short English text
 npm run eval         # regenerate measured tables and raw evaluation data
 npm run schema       # regenerate schema/session.schema.json
 ```
 
 All direct dependency versions are exact and the lockfile is committed. The official MCP TypeScript server SDK is pinned to `@modelcontextprotocol/server` **2.4.0**; its client at 2.4.0 is a test dependency. This is the SDK's v2 package layout, documented in the [official SDK repository](https://github.com/modelcontextprotocol/typescript-sdk). MediaPipe Tasks Vision is pinned to **1.2.2**.
+
+## Try the app
+
+**Planned live URL:** [https://driedsandwich.github.io/cpr-pace-coach/](https://driedsandwich.github.io/cpr-pace-coach/). This is a placeholder until the owner publishes the repository and enables Pages. This change does not publish or push anything.
+
+1. **Try demo** is the quickest introduction, with no camera permission or model download. Deterministic motion from `src/synth.ts` is played through the real `PracticeSession` and detector. “Simulated motion” remains visible during practice and on results. Numbers are calculated, not copied from a mockup.
+2. **Start with camera** opens a setup diagram. Place a stable camera to your side, slightly angled so both shoulders, elbows and wrists remain visible; a pure side view may hide one arm. Enable the camera, allow access, check the preview, and confirm the cushion/manikin setup before beginning. HTTPS or localhost is required.
+3. **Import a practice video** selects a local file and uses `analyzeVideoFile` from `src/video.ts`. The first two minutes are analyzed on a 30 Hz seek grid; a shorter recording is marked ended early. Progress reflects video time, not wall-clock time. Cancel releases the video and model. Codec support depends on the browser; MP4 or WebM is a useful starting point.
+
+During live practice, the target band is 100–120 /min. The current rate uses the latest five detected wrist cycles. The three supporting tiles show recent interval variability, observed hands-off time, and the mean of the current left/right 2D elbow angles. Missing tracking displays a dash, never a fabricated zero. These are prototype estimates, not verified chest compressions or a CPR competence assessment.
+
+**Beat on/off** generates a 110/min metronome with Web Audio. **Voice on/off** uses only an English `speechSynthesis` voice whose `localService` flag is true; if unavailable, the button explains that and visual coaching continues. Both are off initially. A user gesture enables audio. Pausing, ending, changing mode, or hiding the tab stops coaching audio.
+
+**Pause / Resume** excludes user-paused wall time from the two-minute running clock and splits detector observations so a pause is not counted as hands-off. Hiding the page automatically pauses live practice; resume explicitly when ready. **End practice** produces an early result. At 120 running seconds, results open automatically and the camera is released. The one-page summary includes target-band share, rate, CV, observed stops/time, projected arm extension, tracking coverage, wall-clock start/end and a next practice goal. Unavailable values are shown as dashes and exported as nulls where the core schema defines nullable metrics.
+
+**For AI agents / Export JSON** describes manual sharing and the two implemented MCP tools. The download is an envelope described by `schema/practice-export.schema.json`: provenance (`source`, `is_demo`), start/end, `paused_ms`, exact detector configuration, model identity, sampling/window definitions, privacy fields, and `session`. `session` conforms to the existing `schema/session.schema.json`; the original strict MCP contract is unchanged. Pass **`export.session`**, not the whole export, to `summarize_session` or `compare_sessions`. No file names, paths, raw frames or pose coordinates are exported, and no sharing happens automatically. Download before leaving; results are held in memory only.
+
+### Runtime model and privacy
+
+The pinned MediaPipe npm SDK is bundled by Vite. `scripts/web-assets.mjs` copies its pinned WASM runtime into the local static site. The **model weights are never committed or bundled**: camera/video mode downloads the Lite float16 v1 task at runtime from [Google's official model distribution](https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task). This is a network request for a model, not an upload of your video. The browser may cache it according to the server's policy; the application does not promise offline camera availability. CPU inference is used for compatibility. Failed downloads, permission denial, unavailable camera and decoding failures have visible recovery messages; Try demo remains available. The download has a 45-second timeout and is cancellable. WASM/model initialization can briefly block the main thread.
+
+No external fonts, photos or real-person recordings are included. The setup drawing and pose preview are original SVG geometry. A browser-enforced Content Security Policy allows external connections only to the exact official model URL. MediaPipe 1.2.2 attempts SDK logging without a public opt-out; the policy blocks that endpoint before transmission (the developer console may report the blocked attempt). Model downloads are the only permitted external connections during ordinary camera/video operation; demo needs only the static site. Source links are explicit user navigation. Local speech availability is determined by the browser API, rather than routing voice through a remote service.
+
+### GitHub Pages
+
+Vite's base is `/cpr-pace-coach/`. `.github/workflows/pages.yml` uses official GitHub actions pinned to commit SHAs. On `main` pushes or manual dispatch it installs, tests and builds, then uploads only `dist/site`. Deployment is gated on the repository being public. When ready, make the repository public yourself, set **Settings → Pages → Source → GitHub Actions**, then run the workflow or push to `main`. The Node MCP process is not deployed to Pages. No model `.task` file is in the artifact.
+
+### Browser checks and screenshots
+
+```sh
+npx playwright install chromium
+# On a minimal Linux host, install Chromium's OS dependencies first.
+npm run build
+npm run test:browser
+# In another terminal, npm run preview -- --port 4174
+node scripts/capture.mjs /absolute/path/to/artifacts
+# Optional network smoke: actual model + synthetic camera and generated video
+node scripts/model-smoke.mjs /absolute/path/to/artifacts
+```
+
+Browser checks cover a full synthetic session, pause/resume accounting, JSON downloads and the unchanged core parser, mobile width/keyboard controls, failure recovery and cancellation. Browser testing uses synthetic/fake inputs only, never real-person footage. Screenshots are actual rendered pages, not design mockups. Clinical accuracy, physical webcam framing, audible voice quality, and Safari/iOS hardware behavior still need device testing.
 
 ## Files and API
 
@@ -35,7 +78,7 @@ All direct dependency versions are exact and the lockfile is committed. The offi
 - `eval/RESULTS.md`, `eval/results.json`: measured results and reproducible options.
 - `eval/example-session.json`: a valid result ready to supply to an MCP tool.
 
-A future browser UI can import the TypeScript sources through a bundler or the built exports after `npm run build`:
+The browser UI imports the TypeScript sources through Vite. Library consumers can use the built exports after `npm run build`:
 
 ```ts
 import { PracticeSession } from './src/session.js';
@@ -98,15 +141,15 @@ Camera motion, zoom, perspective, arm occlusion, poor lighting, body translation
 
 ## Recorded-video example (browser only)
 
-No browser automation, real-person footage, or photographs were used in development. The adapter is type-checked, but was **not run in a browser**. This example is integration guidance for a future UI.
+The UI calls this adapter directly. The following is a lower-level example for supplying a model file yourself; the UI instead uses the official runtime model URL described above. Browser smoke tests use generated imagery only.
 
-Host the installed package's `node_modules/@mediapipe/tasks-vision/wasm` directory at `/vendor/mediapipe/wasm` on your own origin. Obtain a Pose Landmarker `.task` bundle from the [official model bundle table](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) separately, respecting its license. No weights are bundled here. Bundle the npm JavaScript locally; do not use a third-party CDN for runtime assets.
+Host the installed package's `node_modules/@mediapipe/tasks-vision/wasm` directory at `/vendor/mediapipe/wasm` on your own origin. Obtain a Pose Landmarker `.task` bundle from the [official model bundle table](https://ai.google.dev/edge/mediapipe/solutions/vision/pose_landmarker) separately, respecting its license. No weights are bundled here. The app bundles npm JavaScript and WASM locally and fetches only model weights from Google at runtime.
 
 ```ts
 import { FilesetResolver, PoseLandmarker } from '@mediapipe/tasks-vision';
 import { analyzeVideoFile } from './src/video.js';
 
-// Local File values supplied by your future UI. Use an appropriate synthetic
+// Local File values supplied by a caller. Use an appropriate synthetic
 // recording or manikin-only footage when validating this integration.
 async function analyze(videoFile: File, modelFile: File) {
   const vision = await FilesetResolver.forVisionTasks('/vendor/mediapipe/wasm');
@@ -117,7 +160,7 @@ async function analyze(videoFile: File, modelFile: File) {
     numPoses: 2, // lets the adapter reject ambiguous multi-person frames
     outputSegmentationMasks: false,
   });
-  const controller = new AbortController(); // wire controller.abort() to future UI
+  const controller = new AbortController(); // wire controller.abort() to your cancel action
   try {
     return await analyzeVideoFile(videoFile, pose, {
       fps: 30, // set to the source frame rate when known
@@ -154,9 +197,9 @@ For example, load `eval/example-session.json` as the `session` value. Comparing 
 
 ## Privacy
 
-The detector/session modules accept numbers and have no networking or persistence. The video adapter accepts a local File, uses a blob URL and passes frames to the browser's local MediaPipe inference. It contains no upload, analytics, fetch or telemetry code. Local model/WASM hosting avoids third-party asset requests during analysis; installing npm dependencies and separately downloading models are setup network activities. No real-person images, video datasets or model weights are included in this package.
+The detector/session modules accept numbers and have no networking or persistence. The video adapter accepts a local File, uses a blob URL and passes frames to the browser's local MediaPipe inference. It contains no upload, analytics, fetch or telemetry code. The web app hosts WASM locally and downloads the pose model from Google at runtime on camera/video entry; that request contains no footage. Installing npm dependencies is a separate setup activity. No real-person images, video datasets or model weights are included in this package.
 
-MCP operates in a separate local Node process on result JSON, never raw video or landmarks. Its stdio response goes to the client that called it. An external AI client can have its own data policy; invoking these tools does not authorize video transfer. Keep future UI/integration code free of uploads and third-party analytics to preserve this privacy design. Actual browser network behavior has not been audited in this environment.
+MCP operates in a separate local Node process on result JSON, never raw video or landmarks. Its stdio response goes to the client that called it. An external AI client can have its own data policy; invoking these tools does not authorize video transfer. The UI has no uploads or third-party analytics. Browser tests check that the demo makes no requests to external origins; camera/video additionally fetch model assets.
 
 ## Target sources and licensing
 
@@ -176,4 +219,4 @@ Original code in this package is **MIT**, see `LICENSE`. Third-party dependencie
 
 The measured average-rate errors for the three constant-rate noise/spike cases are 0.000, 0.011 and 0.006 cpm (rounded). This is synthetic algorithm testing, not real-world accuracy. Two imposed stops totaling 8.000 s produce two detected pauses totaling 9.367 s because of peak-to-peak boundaries. The evaluator also reports peak-time error, emission latency, CV error, missed events during tracking loss and projected elbow flags.
 
-Remaining integration work: UI/camera acquisition, browser video smoke testing, frame-accurate variable-rate decoding if required, and independent validation of camera/pose errors. No deployment, push, external application writes or real-person imagery were used.
+Remaining validation: independent camera/pose accuracy testing on physical devices, Safari/iOS and audible speech checks, and frame-accurate variable-rate decoding if required. This is not a clinically validated tool. No deployment, push, external application writes or real-person imagery were used.
