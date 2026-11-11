@@ -65,7 +65,7 @@ node scripts/capture.mjs /absolute/path/to/artifacts
 node scripts/model-smoke.mjs /absolute/path/to/artifacts
 ```
 
-Browser checks cover a full synthetic session, pause/resume accounting, JSON downloads and the unchanged core parser, mobile width/keyboard controls, failure recovery and cancellation. Browser testing uses synthetic/fake inputs only, never real-person footage. Screenshots are actual rendered pages, not design mockups. Clinical accuracy, physical webcam framing, audible voice quality, and Safari/iOS hardware behavior still need device testing.
+Browser checks cover a full synthetic session, pause/resume accounting, JSON downloads and the unchanged core parser, mobile width/keyboard controls, failure recovery and cancellation. These automated browser checks use synthetic/fake inputs only, never real-person footage. A separate one-off import check of the published app with a CC BY 3.0 training film is recorded in `eval/BROWSER_IMPORT_CHECK.md`; the film is not included in this repository. Screenshots are actual rendered pages, not design mockups. Clinical accuracy, physical webcam framing, audible voice quality, and Safari/iOS hardware behavior still need device testing.
 
 ### Record the five-scene demo
 
@@ -92,6 +92,7 @@ Only the recording context stubs the English speech voice list and speech output
 - `test/`: Vitest tests, including a real local MCP stdio client/server roundtrip.
 - `eval/RESULTS.md`, `eval/results.json`: measured results and reproducible options.
 - `eval/example-session.json`: a valid result ready to supply to an MCP tool.
+- `eval/BROWSER_IMPORT_CHECK.md`: one import of a published training film into the live app (completes end to end; the camera angle is not readable).
 
 The browser UI imports the TypeScript sources through Vite. Library consumers can use the built exports after `npm run build`:
 
@@ -234,4 +235,4 @@ Original code in this package is **MIT**, see `LICENSE`. Third-party dependencie
 
 The measured average-rate errors for the three constant-rate noise/spike cases are 0.000, 0.011 and 0.006 cpm (rounded). This is synthetic algorithm testing, not real-world accuracy. Two imposed stops totaling 8.000 s produce two detected pauses totaling 9.367 s because of peak-to-peak boundaries. The evaluator also reports peak-time error, emission latency, CV error, missed events during tracking loss and projected elbow flags.
 
-Remaining validation: independent camera/pose accuracy testing on physical devices, Safari/iOS and audible speech checks, and frame-accurate variable-rate decoding if required. This is not a clinically validated tool. No external application writes or real-person imagery were used. The static site is published on GitHub Pages from this repository.
+Remaining validation: independent camera/pose accuracy testing on physical devices, Safari/iOS and audible speech checks, and frame-accurate variable-rate decoding if required. This is not a clinically validated tool. No external application writes were made, and apart from the one-off import check in `eval/BROWSER_IMPORT_CHECK.md` no real-person imagery was used. The static site is published on GitHub Pages from this repository.
